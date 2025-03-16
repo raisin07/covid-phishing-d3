@@ -28,8 +28,31 @@ Promise.all([
                 let country = d.properties.name;
                 return countryPhishing[country] ? d3.interpolateReds(countryPhishing[country] / 1000) : "#ccc";
             })
-            .attr("stroke", "#fff");
+            .attr("stroke", "#fff")
+            .on("mouseover", function (event, d) {
+                let country = d.properties.name;
+                let attacks = countryPhishing[country] || 0;
+                tooltip.html(`<strong>${country}</strong><br>Attaques: ${attacks}`)
+                    .style("visibility", "visible");
+            })
+            .on("mousemove", function (event) {
+                tooltip.style("top", (event.pageY - 10) + "px")
+                    .style("left", (event.pageX + 10) + "px");
+            })
+            .on("mouseout", function () {
+                tooltip.style("visibility", "hidden");
+            });
     });
+
+    // Ajouter un tooltip invisible
+    let tooltip = d3.select("body").append("div")
+        .style("position", "absolute")
+        .style("background", "white")
+        .style("border", "1px solid black")
+        .style("padding", "5px")
+        .style("border-radius", "5px")
+        .style("visibility", "hidden")
+        .style("font-size", "14px");
 
     // Graphique de l'évolution des attaques de phishing
     d3.csv("phishing_trends.csv").then(data => {
@@ -92,10 +115,8 @@ Promise.all([
             .attr("stroke-width", 2)
             .attr("d", lineCovid);
 
-        // Supprimer uniquement les anciennes légendes pour éviter la duplication
         svg.selectAll(".legend").remove();
 
-        // Ajouter la légende pour les attaques de phishing (rouge)
         svg.append("text")
             .attr("class", "legend")
             .attr("x", width / 2 - 50)  
@@ -106,7 +127,6 @@ Promise.all([
             .style("font-weight", "bold")
             .text("Attaques de phishing");
 
-        // Ajouter la légende pour les cas COVID-19 (bleu)
         svg.append("text")
             .attr("class", "legend")
             .attr("x", width / 2 + 100)  
