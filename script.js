@@ -199,5 +199,17 @@ Promise.all([
             .attr("opacity", 0.7)
             .attr("d", lineCases);
     });
+    // Gestion du mode sombre
+document.getElementById("toggleTheme").addEventListener("click", function () {
+    document.body.classList.toggle("dark-mode");
+
+    // Mise à jour du texte du bouton en fonction du mode
+    if (document.body.classList.contains("dark-mode")) {
+        this.textContent = "☀️ Mode clair";
+    } else {
+        this.textContent = "🌙 Mode sombre";
+    }
+});
+
 
 }).catch(error => console.error("Erreur de chargement des données :", error));

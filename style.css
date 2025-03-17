@@ -105,3 +105,30 @@ h1 {
     margin-bottom: 10px;
     color: #444;
 }
+
+/* Rendre tous les textes visibles en mode sombre */
+.dark-mode h1, 
+.dark-mode h2, 
+.dark-mode h3, 
+.dark-mode p, 
+.dark-mode label, 
+.dark-mode #time-period {
+    color: white;
+}
+
+/* Assurer que les titres restent noirs en mode clair */
+h1, h2, h3, p, #time-period {
+    color: black;
+}
+
+/* Rendre le texte du graphique visible en mode sombre */
+.dark-mode text, 
+.dark-mode .axis text, 
+.dark-mode .legend text {
+    fill: white !important;
+}
+
+/* Garde le texte noir en mode clair */
+text, .axis text, .legend text {
+    fill: black;
+}
