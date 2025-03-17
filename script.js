@@ -1,140 +1,175 @@
-// Charger les données COVID et Phishing
+// Charger les données
 Promise.all([
-    d3.json('https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/latest/owid-covid-latest.json'),
-    d3.csv('phishing_attacks.csv')
-]).then(([covidData, phishingData]) => {
-    
-    // Transformer les données pour la carte
+    d3.json('https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson'),
+    d3.csv('phishing_attacks.csv'),
+    d3.csv('phishing_trends.csv')
+]).then(([worldData, phishingData, trendsData]) => {
+
+    document.getElementById("loading").style.display = "none"; // Masquer le message de chargement
+
     let countryPhishing = {};
     phishingData.forEach(d => {
         countryPhishing[d.country] = +d.attacks;
     });
 
-    // Projection de la carte du monde
+    // Correction des noms des pays
+    const countryNameCorrections = {
+        "United States": "United States of America",
+        "United Kingdom": "United Kingdom of Great Britain and Northern Ireland"
+    };
+
+    let countrySelect = document.getElementById("countryFilter");
+    phishingData.forEach(d => {
+        let option = document.createElement("option");
+        option.value = d.country;
+        option.textContent = d.country;
+        countrySelect.appendChild(option);
+    });
+
     let svg = d3.select("#map").append("svg")
         .attr("width", 800)
         .attr("height", 500);
-    
+
     let projection = d3.geoMercator().scale(130).translate([400, 250]);
     let path = d3.geoPath().projection(projection);
-    
-    d3.json('https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson').then(world => {
-        svg.append("g")
-            .selectAll("path")
-            .data(world.features)
-            .enter().append("path")
-            .attr("d", path)
-            .attr("fill", d => {
-                let country = d.properties.name;
-                return countryPhishing[country] ? d3.interpolateReds(countryPhishing[country] / 1000) : "#ccc";
-            })
-            .attr("stroke", "#fff")
-            .on("mouseover", function (event, d) {
-                let country = d.properties.name;
-                let attacks = countryPhishing[country] || 0;
-                tooltip.html(`<strong>${country}</strong><br>Attaques: ${attacks}`)
-                    .style("visibility", "visible");
-            })
-            .on("mousemove", function (event) {
-                tooltip.style("top", (event.pageY - 10) + "px")
-                    .style("left", (event.pageX + 10) + "px");
-            })
-            .on("mouseout", function () {
-                tooltip.style("visibility", "hidden");
-            });
-    });
 
-    // Ajouter un tooltip invisible
+    // Création d'un tooltip flottant
     let tooltip = d3.select("body").append("div")
+        .attr("class", "tooltip")
         .style("position", "absolute")
-        .style("background", "white")
-        .style("border", "1px solid black")
-        .style("padding", "5px")
+        .style("background", "rgba(0, 0, 0, 0.8)")
+        .style("color", "#fff")
+        .style("padding", "8px 12px")
         .style("border-radius", "5px")
-        .style("visibility", "hidden")
-        .style("font-size", "14px");
+        .style("font-size", "14px")
+        .style("pointer-events", "none")
+        .style("opacity", 0);
 
-    // Graphique de l'évolution des attaques de phishing
-    d3.csv("phishing_trends.csv").then(data => {
-        data.forEach(d => {
-            d.attacks = +d.attacks;
-            d.covid_cases = +d.covid_cases;
+    let countries = svg.append("g").selectAll("path")
+        .data(worldData.features)
+        .enter().append("path")
+        .attr("d", path)
+        .attr("fill", d => {
+            let country = d.properties.name;
+            let normalizedCountry = countryNameCorrections[country] || country;
+            return countryPhishing[normalizedCountry] ? d3.interpolateReds(countryPhishing[normalizedCountry] / 500) : "#ccc";
+        })
+        .attr("stroke", "#fff")
+        .on("mouseover", function (event, d) {
+            let country = d.properties.name;
+            let normalizedCountry = countryNameCorrections[country] || country;
+            let attackCount = countryPhishing[normalizedCountry] || 0;
+
+            tooltip.transition().duration(200).style("opacity", 1);
+            tooltip.html(`<strong>${normalizedCountry}</strong><br>${attackCount} attaques`)
+                .style("left", (event.pageX + 15) + "px")
+                .style("top", (event.pageY - 30) + "px");
+
+            d3.select(this).attr("fill", "orange");
+        })
+        .on("mousemove", function (event) {
+            tooltip.style("left", (event.pageX + 15) + "px")
+                   .style("top", (event.pageY - 30) + "px");
+        })
+        .on("mouseout", function () {
+            tooltip.transition().duration(300).style("opacity", 0);
+            d3.select(this).attr("fill", d => {
+                let country = d.properties.name;
+                let normalizedCountry = countryNameCorrections[country] || country;
+                return countryPhishing[normalizedCountry] ? d3.interpolateReds(countryPhishing[normalizedCountry] / 500) : "#ccc";
+            });
         });
 
-        const width = 800, height = 400, margin = { top: 80, right: 50, bottom: 50, left: 80 };
-        const svg = d3.select("#linechart").append("svg")
-            .attr("width", width)
-            .attr("height", height);
+    // Filtrage par pays
+    document.getElementById("countryFilter").addEventListener("change", function () {
+        let selectedCountry = this.value;
+        countries.attr("fill", d => {
+            let country = d.properties.name;
+            let normalizedCountry = countryNameCorrections[country] || country;
+            return (selectedCountry === "all" || normalizedCountry === selectedCountry) ?
+                (countryPhishing[normalizedCountry] ? d3.interpolateReds(countryPhishing[normalizedCountry] / 500) : "#ccc") :
+                "#eee";
+        });
+    });
 
-        const x = d3.scalePoint()
-            .domain(data.map(d => d.month))
-            .range([margin.left, width - margin.right]);
+    // Gestion des données du graphique
+    trendsData.forEach(d => {
+        d.attacks = +d.attacks;
+        d.covid_cases = +d.covid_cases;
+        d.date = new Date(d.month);
+    });
 
-        const y1 = d3.scaleLinear()
-            .domain([0, d3.max(data, d => d.attacks)])
-            .range([height - margin.bottom, margin.top]);
+    const selectedCountries = ["United States", "United Kingdom", "France", "Germany", "India"];
+    const filteredData = trendsData.filter(d => selectedCountries.includes(d.country));
 
-        const y2 = d3.scaleLinear()
-            .domain([0, d3.max(data, d => d.covid_cases)])
-            .range([height - margin.bottom, margin.top]);
+    const width = 800, height = 400, margin = { top: 50, right: 120, bottom: 80, left: 80 };
+    const svgLine = d3.select("#linechart").append("svg")
+        .attr("width", width)
+        .attr("height", height);
 
-        svg.append("g")
-            .attr("transform", `translate(0,${height - margin.bottom})`)
-            .call(d3.axisBottom(x))
-            .selectAll("text")
-            .attr("transform", "rotate(-45)")
-            .style("text-anchor", "end");
+    // Ajout du titre
+    svgLine.append("text")
+        .attr("x", width / 2)
+        .attr("y", margin.top - 10)
+        .attr("text-anchor", "middle")
+        .style("font-size", "18px")
+        .style("font-weight", "bold")
+        .text("Évolution des attaques de phishing et des cas COVID-19");
 
-        svg.append("g")
-            .attr("transform", `translate(${margin.left},0)`)
-            .call(d3.axisLeft(y1));
+    // Définition des axes
+    const x = d3.scaleTime()
+        .domain(d3.extent(filteredData, d => d.date))
+        .range([margin.left, width - margin.right]);
 
-        svg.append("g")
-            .attr("transform", `translate(${width - margin.right},0)`)
-            .call(d3.axisRight(y2));
+    const yLeft = d3.scaleLinear()
+        .domain([0, d3.max(filteredData, d => d.attacks) * 1.2])
+        .range([height - margin.bottom, margin.top]);
 
-        const linePhishing = d3.line()
-            .x(d => x(d.month))
-            .y(d => y1(d.attacks));
+    const yRight = d3.scaleLinear()
+        .domain([0, d3.max(filteredData, d => d.covid_cases) * 1.2])
+        .range([height - margin.bottom, margin.top]);
 
-        const lineCovid = d3.line()
-            .x(d => x(d.month))
-            .y(d => y2(d.covid_cases));
+    svgLine.append("g")
+        .attr("transform", `translate(0,${height - margin.bottom})`)
+        .call(d3.axisBottom(x).tickFormat(d3.timeFormat("%b %Y")))
+        .selectAll("text")
+        .attr("transform", "rotate(-45)")
+        .style("text-anchor", "end");
 
-        svg.append("path")
-            .datum(data)
+    svgLine.append("g").attr("transform", `translate(${margin.left},0)`).call(d3.axisLeft(yLeft));
+    svgLine.append("g").attr("transform", `translate(${width - margin.right + 20},0)`).call(d3.axisRight(yRight));
+
+    // Ajout des courbes
+    let lineAttacks = d3.line()
+        .x(d => x(d.date))
+        .y(d => yLeft(d.attacks));
+
+    let lineCases = d3.line()
+        .x(d => x(d.date))
+        .y(d => yRight(d.covid_cases));
+
+    selectedCountries.forEach(country => {
+        let countryData = filteredData.filter(d => d.country === country);
+        svgLine.append("path")
+            .datum(countryData)
             .attr("fill", "none")
             .attr("stroke", "red")
             .attr("stroke-width", 2)
-            .attr("d", linePhishing);
+            .attr("stroke-dasharray", "5,5")
+            .attr("d", lineAttacks);
 
-        svg.append("path")
-            .datum(data)
+        svgLine.append("path")
+            .datum(countryData)
             .attr("fill", "none")
             .attr("stroke", "blue")
             .attr("stroke-width", 2)
-            .attr("d", lineCovid);
-
-        svg.selectAll(".legend").remove();
-
-        svg.append("text")
-            .attr("class", "legend")
-            .attr("x", width / 2 - 50)  
-            .attr("y", margin.top - 40)  
-            .attr("fill", "red")
-            .attr("text-anchor", "middle")
-            .style("font-size", "16px")
-            .style("font-weight", "bold")
-            .text("Attaques de phishing");
-
-        svg.append("text")
-            .attr("class", "legend")
-            .attr("x", width / 2 + 100)  
-            .attr("y", margin.top - 40)
-            .attr("fill", "blue")
-            .attr("text-anchor", "middle")
-            .style("font-size", "16px")
-            .style("font-weight", "bold")
-            .text("Cas COVID-19");
+            .attr("d", lineCases);
     });
-});
+
+    // Gestion du mode sombre/clair
+    document.getElementById("toggleTheme").addEventListener("click", function () {
+        document.body.classList.toggle("dark-mode");
+        this.textContent = document.body.classList.contains("dark-mode") ? "☀️ Mode clair" : "🌙 Mode sombre";
+    });
+
+}).catch(error => console.error("Erreur de chargement des données :", error));

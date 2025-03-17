@@ -8,15 +8,42 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <button id="toggleTheme">🌙 Mode sombre</button>
+
+    <div class="container">
+        <div class="info-section">
+            <h2>Contexte du projet</h2>
+            <p>
+                Cette visualisation explore l'impact de la pandémie de COVID-19 sur les attaques de phishing à travers le monde.
+            </p>
+        
+            <h2>Données affichées</h2>
+            <ul>
+                <li><strong>Carte interactive :</strong> Visualisation des pays les plus touchés.</li>
+                <li><strong>Graphique temporel :</strong> Évolution des attaques de phishing et des cas COVID-19.</li>
+            </ul>
+        
+            <h2>Utilisation</h2>
+            <ul>
+                <li><strong>Menu déroulant</strong> : Sélectionner un pays.</li>
+                <li><strong>Survol</strong> : Voir le nombre exact d'attaques.</li>
+                <li><strong>Graphique</strong> : Lignes rouges pour le phishing, lignes bleues pour le COVID-19.</li>
+            </ul>
+        </div>
+
     <h1>Visualisation des attaques de phishing pendant le COVID-19</h1>
-    <select id="filter">
+    <p id="time-period"><strong>Période analysée :</strong> Janvier 2020 - Mars 2021</p>
+
+    <label for="countryFilter">Filtrer par pays :</label>
+    <select id="countryFilter">
         <option value="all">Tous les pays</option>
-        <option value="Europe">Europe</option>
-        <option value="Asia">Asie</option>
-        <option value="America">Amérique</option>
-    </select>    
+    </select>
+
+    <div id="loading">Chargement des données...</div>
+
     <div id="map"></div>
     <div id="linechart"></div>
+
     <script src="script.js"></script>
 </body>
 </html>
