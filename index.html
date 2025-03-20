@@ -42,7 +42,20 @@
     <div id="loading">Chargement des données...</div>
 
     <div id="map"></div>
+    <div id="chart-filter-section">
+        <label for="chartCountryFilter">Sélectionner un pays pour le graphique :</label>
+        <select id="chartCountryFilter">
+            <option value="all">Tous les pays</option>
+        </select>
+    </div>
+
+    <div id="chart-legend">
+        <span><span class="legend-box" style="background-color: red;"></span> Attaques de phishing</span>
+        <span><span class="legend-box" style="background-color: blue;"></span>Cas COVID-19</span>
+    </div>
+
     <div id="linechart"></div>
+    
 
     <script src="script.js"></script>
 </body>
