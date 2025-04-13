@@ -7,13 +7,12 @@ body {
     padding: 0;
 }
 
-/* Contenu large mais centré */
 .container {
-    max-width: 1000px;
+    width: 100%;    
     margin: 0 auto;
 }
 
-/* Info-section bien encadrée */
+/* Info-section */
 .info-section {
     max-width: 900px;
     margin: 30px auto;
@@ -24,7 +23,7 @@ body {
     text-align: left;
 }
 
-/* Ajustement du titre principal */
+/* Titre principal */
 h1 {
     color: #333;
     font-size: 26px;
@@ -33,22 +32,14 @@ h1 {
     margin-top: 30px;
 }
 
-/* Centrage du filtre */
-#filter-section {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-/* Centrage de la carte */
+/* Carte */
 #map {
     display: flex;
     justify-content: center;
     margin: 20px auto;
 }
 
-/* Bouton Mode Sombre plus discret */
+/* Bouton Mode Sombre */
 #toggleTheme {
     position: absolute;
     top: 15px;
@@ -61,7 +52,6 @@ h1 {
     cursor: pointer;
     transition: color 0.3s ease;
 }
-
 #toggleTheme:hover {
     color: black;
 }
@@ -71,21 +61,18 @@ h1 {
     background-color: #1e1e1e;
     color: white;
 }
-
 .dark-mode .info-section {
     background-color: #2a2a2a;
     color: #ddd;
 }
-
 .dark-mode #toggleTheme {
     color: #ccc;
 }
-
 .dark-mode #toggleTheme:hover {
     color: white;
 }
 
-/* Tooltip flottant */
+/* Tooltip */
 .tooltip {
     position: absolute;
     background: rgba(0, 0, 0, 0.8);
@@ -93,11 +80,12 @@ h1 {
     padding: 8px 12px;
     border-radius: 5px;
     font-size: 14px;
-    pointer-events: none; /* Permet d'éviter que la souris interagisse avec */
+    pointer-events: none;
     opacity: 0;
     transition: opacity 0.2s ease-in-out;
 }
 
+/* Période */
 #time-period {
     text-align: center;
     font-size: 16px;
@@ -106,58 +94,17 @@ h1 {
     color: #444;
 }
 
-/* Rendre tous les textes visibles en mode sombre */
-.dark-mode h1, 
-.dark-mode h2, 
-.dark-mode h3, 
-.dark-mode p, 
-.dark-mode label, 
-.dark-mode #time-period {
-    color: white;
-}
-
-/* Assurer que les titres restent noirs en mode clair */
-h1, h2, h3, p, #time-period {
-    color: black;
-}
-
-/* Rendre le texte du graphique visible en mode sombre */
+/* Texte SVG */
 .dark-mode text, 
 .dark-mode .axis text, 
 .dark-mode .legend text {
     fill: white !important;
 }
-
-/* Garde le texte noir en mode clair */
 text, .axis text, .legend text {
     fill: black;
 }
 
-/* Conteneur de la légende */
-#chart-legend {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-bottom: 10px;
-    font-size: 16px;
-    font-weight: bold;
-}
-
-/* Boîte colorée pour chaque élément de la légende */
-.legend-box {
-    display: inline-block;
-    width: 15px;
-    height: 15px;
-    margin-right: 5px;
-    border-radius: 3px;
-}
-
-/* Mode sombre */
-.dark-mode #chart-legend {
-    color: white;
-}
-
-/* Style général des listes déroulantes */
+/* Liste déroulante */
 select {
     padding: 10px;
     font-size: 16px;
@@ -168,36 +115,122 @@ select {
     transition: all 0.3s ease;
     outline: none;
 }
-
-/* Effet au survol et focus */
 select:hover, select:focus {
     border-color: #0056b3;
 }
-
-/* Options dans les listes */
 select option {
     font-size: 14px;
     padding: 5px;
 }
-
-/* Centrer les listes déroulantes */
-#filter-section, #chart-filter-section {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
-    gap: 10px;
+#chartCountryFilter {
+    width: 100%;
+    height: auto;
 }
-
-#filter-section label, 
-#chart-filter-section label {
-    font-size: 16px;
-    font-weight: bold;
-    color: black; /* Texte noir au lieu de bleu */
-}
-
-/* Mode sombre : Rendre les labels blancs */
-.dark-mode #filter-section label,
-.dark-mode #chart-filter-section label {
+.dark-mode label {
     color: white;
+}
+
+/* Checkboxes */
+#chart-options {
+    margin: 15px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 15px;
+}
+#chart-options label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+}
+#chart-options input {
+    margin-right: 5px;
+}
+.dark-mode #chart-options {
+    color: #ddd;
+}
+
+/* Mise en page : graphique + filtres */
+.chart-layout {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 40px;
+    margin: 40px auto;
+    padding: 0 20px;
+    max-width: 1400px;
+    box-sizing: border-box;
+}
+
+/* Bloc de filtres */
+.filters-box {
+    width: 320px;
+    padding: 25px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: left;
+    flex-shrink: 0;
+}
+.filters-box label {
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    display: block;
+}
+.filters-box small {
+    font-size: 13px;
+    color: #666;
+    font-style: italic;
+    margin: 10px 0 15px 0;
+    display: block;
+}
+.dark-mode .filters-box {
+    background-color: #2a2a2a;
+    color: #ddd;
+}
+.dark-mode .filters-box small {
+    color: #aaa;
+}
+.dark-mode .filters-box select {
+    background-color: #3a3a3a;
+    color: #ddd;
+    border-color: #555;
+}
+
+/* Graphique */
+#linechart {
+    flex: 1;
+    min-width: 760px;
+    max-width: 100%;
+}
+
+/* Cadran d’explication */
+#chart-explanation {
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 20px 25px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    width: 90%;
+    max-width: 1000px;
+    margin: 30px auto 60px auto;
+    text-align: justify;
+    font-size: 15px;
+    line-height: 1.6;
+    box-sizing: border-box;
+}
+#chart-explanation h3 {
+    margin-top: 0;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+.dark-mode #chart-explanation {
+    background-color: #2a2a2a;
+    color: #ddd;
+}
+.dark-mode #chart-explanation h3 {
+    color: #fff;
 }

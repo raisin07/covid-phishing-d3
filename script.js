@@ -102,122 +102,147 @@ Promise.all([
     });
 
     // ======== AFFICHAGE DU GRAPHIQUE ==========
-    
-    let chartCountrySelect = document.getElementById("chartCountryFilter");
 
-    // Ajouter tous les pays à la liste déroulante du graphique
-    let uniqueCountries = [...new Set(trendsData.map(d => d.country))];
-    uniqueCountries.forEach(country => {
-        let option = document.createElement("option");
-        option.value = country;
-        option.textContent = country;
-        chartCountrySelect.appendChild(option);
-    });
+let chartCountrySelect = document.getElementById("chartCountryFilter");
 
-    const width = 800, height = 400, margin = { top: 60, right: 100, bottom: 80, left: 80 };
 
-    let svgLine = d3.select("#linechart").append("svg")
-        .attr("width", width)
-        .attr("height", height);
+// Ajouter les pays à la liste déroulante du graphique (multi-sélection)
+let uniqueCountries = [...new Set(trendsData.map(d => d.country))];
+uniqueCountries.forEach(country => {
+    let option = document.createElement("option");
+    option.value = country;
+    option.textContent = country;
+    chartCountrySelect.appendChild(option);
+});
 
-    let x = d3.scaleTime()
-        .domain(d3.extent(trendsData, d => new Date(d.month)))
-        .range([margin.left, width - margin.right]);
+const width = 800, height = 400, margin = { top: 60, right: 110, bottom: 80, left: 90 };
 
-    let yLeft = d3.scaleLinear()
-        .domain([0, d3.max(trendsData, d => +d.attacks) * 1.2])
-        .range([height - margin.bottom, margin.top]);
+let svgLine = d3.select("#linechart").append("svg")
+    .attr("width", width)
+    .attr("height", height);
 
-    let yRight = d3.scaleLinear()
-        .domain([0, d3.max(trendsData, d => +d.covid_cases) * 1.2])
-        .range([height - margin.bottom, margin.top]);
+let x = d3.scaleTime()
+    .domain(d3.extent(trendsData, d => new Date(d.month)))
+    .range([margin.left, width - margin.right]);
 
-    let lineAttacks = d3.line()
+let yLeft = d3.scaleLinear()
+    .domain([0, d3.max(trendsData, d => +d.attacks) * 1.2])
+    .range([height - margin.bottom, margin.top]);
+
+let yRight = d3.scaleLinear()
+    .domain([0, d3.max(trendsData, d => +d.covid_cases) * 1.2])
+    .range([height - margin.bottom, margin.top]);
+
+let color = d3.scaleOrdinal(d3.schemeCategory10);
+
+let lineAttacks = d3.line()
     .x(d => x(new Date(d.month)))
     .y(d => yLeft(+d.attacks))
-    .curve(d3.curveCardinal);  // Arrondi la courbe
+    .curve(d3.curveCardinal);
 
 let lineCases = d3.line()
     .x(d => x(new Date(d.month)))
     .y(d => yRight(+d.covid_cases))
-    .curve(d3.curveCardinal);  // Arrondi la courbe
+    .curve(d3.curveCardinal);
 
+// Axes X et Y
+svgLine.append("g")
+    .attr("transform", `translate(0,${height - margin.bottom})`)
+    .call(d3.axisBottom(x).tickFormat(d3.timeFormat("%b %Y")))
+    .selectAll("text")
+    .attr("transform", "rotate(-45)")
+    .style("text-anchor", "end");
 
-    function updateChart(selectedCountry) {
-        let filteredData = trendsData.filter(d => d.country === selectedCountry);
+svgLine.append("g")
+    .attr("transform", `translate(${margin.left},0)`)
+    .call(d3.axisLeft(yLeft));
 
-        svgLine.selectAll(".line").remove();
+svgLine.append("g")
+    .attr("transform", `translate(${width - margin.right},0)`)
+    .call(d3.axisRight(yRight));
 
-        if (filteredData.length === 0) return;
+// Labels axes
+svgLine.append("text")
+    .attr("x", width / 2)
+    .attr("y", height - 5)
+    .attr("text-anchor", "middle")
+    .style("font-size", "14px")
+    .text("Date");
 
-        svgLine.append("path")
-            .datum(filteredData)
-            .attr("class", "line")
-            .attr("fill", "none")
-            .attr("stroke", "red")
-            .attr("stroke-width", 2)
-            .attr("opacity", 0.9)
-            .attr("d", lineAttacks);
+svgLine.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -height / 2)
+    .attr("y", margin.left / 3)
+    .attr("text-anchor", "middle")
+    .style("font-size", "14px")
+    .text("Nombre d'attaques de phishing");
 
-        svgLine.append("path")
-            .datum(filteredData)
-            .attr("class", "line")
-            .attr("fill", "none")
-            .attr("stroke", "blue")
-            .attr("stroke-width", 2)
-            .attr("opacity", 0.9)
-            .attr("d", lineCases);
+svgLine.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -height / 2)
+    .attr("y", width - margin.right + 60)
+    .attr("text-anchor", "middle")
+    .style("font-size", "14px")
+    .text("Nombre de cas COVID-19");
+
+// Fonction pour mettre à jour le graphique avec sélection multiple
+function updateMultiCountryChart(selectedCountries) {
+    svgLine.selectAll(".line-attacks, .line-cases").remove();
+
+    if(selectedCountries.includes("all")) {
+        selectedCountries = uniqueCountries;
     }
 
-    // Lien entre la liste déroulante du GRAPHIQUE et la mise à jour du graphique
-    chartCountrySelect.addEventListener("change", function () {
-        updateChart(this.value);
+    const showPhishing = document.getElementById("showPhishing").checked;
+    const showCovid = document.getElementById("showCovid").checked;
+
+    selectedCountries.forEach(country => {
+        let filteredData = trendsData.filter(d => d.country === country);
+
+        if(showPhishing){
+            svgLine.append("path")
+                .datum(filteredData)
+                .attr("class", "line-attacks")
+                .attr("fill", "none")
+                .attr("stroke", color(country))
+                .attr("stroke-width", 2)
+                .attr("opacity", 0.8)
+                .attr("d", lineAttacks);
+        }
+
+        if(showCovid){
+            svgLine.append("path")
+                .datum(filteredData)
+                .attr("class", "line-cases")
+                .attr("fill", "none")
+                .attr("stroke", color(country))
+                .attr("stroke-width", 2)
+                .attr("stroke-dasharray", "5,5")
+                .attr("opacity", 0.8)
+                .attr("d", lineCases);
+        }
     });
+}
 
-    // Affichage initial avec le premier pays de la liste du graphique
-    updateChart(uniqueCountries[0]);
+// Écouteur pour les changements sur la sélection des pays
+chartCountrySelect.addEventListener("change", function () {
+    let selectedOptions = Array.from(this.selectedOptions).map(option => option.value);
+    updateMultiCountryChart(selectedOptions);
+});
 
-    // ========== Ajout des axes X et Y avec labels ==========
-    svgLine.append("g")
-        .attr("transform", `translate(0,${height - margin.bottom})`)
-        .call(d3.axisBottom(x).tickFormat(d3.timeFormat("%b %Y")))
-        .selectAll("text")
-        .attr("transform", "rotate(-45)")
-        .style("text-anchor", "end");
+// Écouteurs pour les changements sur les cases à cocher
+document.getElementById("showPhishing").addEventListener("change", () => {
+    let selectedOptions = Array.from(chartCountrySelect.selectedOptions).map(option => option.value);
+    updateMultiCountryChart(selectedOptions);
+});
 
-    svgLine.append("g")
-        .attr("transform", `translate(${margin.left},0)`)
-        .call(d3.axisLeft(yLeft));
+document.getElementById("showCovid").addEventListener("change", () => {
+    let selectedOptions = Array.from(chartCountrySelect.selectedOptions).map(option => option.value);
+    updateMultiCountryChart(selectedOptions);
+});
 
-    svgLine.append("g")
-        .attr("transform", `translate(${width - margin.right},0)`)
-        .call(d3.axisRight(yRight));
-
-    // Ajout du label pour l'axe X
-    svgLine.append("text")
-        .attr("x", width / 2)
-        .attr("y", height - 5)
-        .attr("text-anchor", "middle")
-        .style("font-size", "14px")
-        .text("Date");
-
-    // Ajout du label pour l'axe Y (Phishing)
-    svgLine.append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("x", -height / 2)
-        .attr("y", margin.left / 3)
-        .attr("text-anchor", "middle")
-        .style("font-size", "14px")
-        .text("Nombre d'attaques de phishing");
-
-    // Ajout du label pour l'axe Y droit (Cas COVID-19)
-    svgLine.append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("x", -height / 2)
-        .attr("y", width - margin.right + 60)
-        .attr("text-anchor", "middle")
-        .style("font-size", "14px")
-        .text("Nombre de cas COVID-19");
+// Initialisation (vide au démarrage)
+updateMultiCountryChart([]);
 
 
     // Gestion du mode sombre
@@ -234,3 +259,4 @@ document.getElementById("toggleTheme").addEventListener("click", function () {
 
 
 }).catch(error => console.error("Erreur de chargement des données :", error));
+

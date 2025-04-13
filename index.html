@@ -6,9 +6,12 @@
     <title>COVID & Phishing Attacks</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <link rel="stylesheet" href="style.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 </head>
 <body>
-    <button id="toggleTheme">🌙 Mode sombre</button>
+    <button id="toggleTheme"> Mode sombre</button>
 
     <div class="container">
         <div class="info-section">
@@ -16,13 +19,11 @@
             <p>
                 Cette visualisation explore l'impact de la pandémie de COVID-19 sur les attaques de phishing à travers le monde.
             </p>
-        
             <h2>Données affichées</h2>
             <ul>
                 <li><strong>Carte interactive :</strong> Visualisation des pays les plus touchés.</li>
                 <li><strong>Graphique temporel :</strong> Évolution des attaques de phishing et des cas COVID-19.</li>
             </ul>
-        
             <h2>Utilisation</h2>
             <ul>
                 <li><strong>Menu déroulant</strong> : Sélectionner un pays.</li>
@@ -31,31 +32,58 @@
             </ul>
         </div>
 
-    <h1>Visualisation des attaques de phishing pendant le COVID-19</h1>
-    <p id="time-period"><strong>Période analysée :</strong> Janvier 2020 - Mars 2021</p>
+        <h1>Visualisation des attaques de phishing pendant le COVID-19</h1>
+        <p id="time-period"><strong>Période analysée :</strong> Janvier 2020 - Mars 2021</p>
 
-    <label for="countryFilter">Filtrer par pays :</label>
-    <select id="countryFilter">
-        <option value="all">Tous les pays</option>
-    </select>
-
-    <div id="loading">Chargement des données...</div>
-
-    <div id="map"></div>
-    <div id="chart-filter-section">
-        <label for="chartCountryFilter">Sélectionner un pays pour le graphique :</label>
-        <select id="chartCountryFilter">
+        <label for="countryFilter">Filtrer par pays :</label>
+        <select id="countryFilter">
             <option value="all">Tous les pays</option>
         </select>
-    </div>
 
-    <div id="chart-legend">
-        <span><span class="legend-box" style="background-color: red;"></span> Attaques de phishing</span>
-        <span><span class="legend-box" style="background-color: blue;"></span>Cas COVID-19</span>
-    </div>
+        <div id="loading">Chargement des données...</div>
 
-    <div id="linechart"></div>
-    
+        <div id="map"></div>
+
+        <div class="chart-layout">
+            <div class="filters-box">
+                <div id="chart-filter-section">
+                    <label for="chartCountryFilter">Sélectionner un ou plusieurs pays :</label>
+                    <select id="chartCountryFilter" multiple size="8">
+                        <option value="all">Tous les pays</option>
+                    </select>
+                </div>
+            
+                <small>(Maintenez Ctrl pour sélectionner plusieurs pays)</small>
+            
+                <div id="chart-options">
+                    <label><input type="checkbox" id="showPhishing" checked> Attaques de phishing</label>
+                    <label><input type="checkbox" id="showCovid" checked> Cas COVID-19</label>
+                </div>
+            </div>
+
+            <!-- Graphique à droite -->
+            <div id="linechart"></div>
+        </div>
+        <div id="chart-explanation">
+            <h3>Pourquoi ce graphique ?</h3>
+            <p>
+                À l’origine, notre objectif était d’étudier l’évolution des cyberattaques dans le monde, en lien avec l’essor du télétravail durant la pandémie. 
+                En 2020, de nombreuses entreprises ont dû basculer rapidement vers le travail à distance, souvent sans être préparées sur le plan de la cybersécurité. 
+                Ce changement a créé une opportunité aux attaques, et les hackers ont largement profité de cette fragilité.
+            </p>
+            <p>
+                Cependant, faute de datasets complets ou suffisamment fiables sur les cyberattaques à l’échelle mondiale, nous avons réorienté notre analyse vers des données plus accessibles. 
+                Nous avons choisi de nous appuyer sur deux séries : 
+                 - les cas de COVID-19 (largement documentés) 
+                 - le nombre d’attaques de type phishing — une attaque très répandue depuis quelques années.
+            </p>
+            <p>
+                D'après ce graphique, dès le début de la pandémie, on observe une augmentation notable des campagnes de phishing. 
+                En mettant en parallèle ces données avec l’évolution des cas de COVID-19, on peut voir comment le contexte sanitaire mondial a coïncidé avec une hausse marquée des attaques, 
+                soutenant notre hypothèse d’une opportunité exploitée par les cybercriminels.
+            </p>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
